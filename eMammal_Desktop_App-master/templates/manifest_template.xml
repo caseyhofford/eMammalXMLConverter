@@ -26,8 +26,8 @@
     <ProjectLongitude>{{ deployment['project_longitude'] | default('', true)  }}</ProjectLongitude>
     <CountryCode>{{ deployment['country_code'] }}</CountryCode>
     <ProjectDataAccessandUseConstraints>{{ deployment['project_data_use_and_constraints'] | default('', true)  }}</ProjectDataAccessandUseConstraints>
-    <SubProjectId>{{ deployment['subproject_id'] | default('sp1310', true) }}</SubProjectId>
-    <SubProjectName>{{ deployment['subproject_name'] | default('Bayuelin Nature Reserve', true) }}</SubProjectName>
+    <SubProjectId>{{ deployment['subproject_id'] | default('default subproject', true) }}</SubProjectId>
+    <SubProjectName>{{ deployment['subproject_name'] | default('default subproject', true) }}</SubProjectName>
     <SubProjectDesign></SubProjectDesign>
     <PlotName></PlotName>
     <PlotTreatment></PlotTreatment>
@@ -47,14 +47,14 @@
     <CameraDeploymentNotes></CameraDeploymentNotes>
     <ActualLatitude>{{ deployment['actual_latitude'] | default('', true)}}</ActualLatitude>
     <ActualLongitude>{{ deployment['actual_longitude'] | default('', true) }}</ActualLongitude>
-    <CameraFailureDetails>Camera Functioning</CameraFailureDetails>
+    <CameraFailureDetails>{{ deployment['camera_failure_details'] and 'Camera Functioning' or 'Other Failure'  }}</CameraFailureDetails>
     <Bait>{{ deployment['bait'] | default('', true)}}</Bait>
-    <BaitDescription>{{ deployment['bait_description'] | default('', true)}}</BaitDescription>
+    <BaitDescription></BaitDescription>
     <Feature>{{ deployment['feature'] }}</Feature>
     <FeatureMethodology>{{ deployment['feature_methodology'] | default('', true) }}</FeatureMethodology>
     <AccessConstraints>{{ deployment['access_constraint' ] | default('', true) }}</AccessConstraints>
     <CameraID>{{ deployment['camera_id'] | default('', true)}}</CameraID>
-    <DetectionDistance>0</DetectionDistance>
+    <DetectionDistance></DetectionDistance>
     <QuietPeriodSetting>{{ deployment['quiet_period_setting'] | default('', true) }}</QuietPeriodSetting>
     <ImageResolutionSetting></ImageResolutionSetting>
     <SensitivitySetting></SensitivitySetting>
@@ -64,20 +64,18 @@
         <ImageSequenceBeginTime>{{ sequence['begin_date_time'] | default('', true) }}</ImageSequenceBeginTime>
         <ImageSequenceEndTime>{{ sequence['end_date_time'] | default('', true) }}</ImageSequenceEndTime>
         <VolunteerIdentifications>
-            {% for ident2 in sequence['researcher_identifications'] %}
             <Identification>
-                <IUCNId>{{ ident2['iucn_id'] | default('', true) }}</IUCNId>
-                <TSNId>{{ ident2['tsn_id'] | default('', true) }}</TSNId>
-                <SpeciesScientificName>{{ ident2['sn'] | default('', true) }}</SpeciesScientificName>
-                <SpeciesCommonName>{{ ident2['cn'] | default('', true) }}</SpeciesCommonName>
-                <Count>{{ ident2['count'] | default('', true) }}</Count>
-                <Age>{{ ident2['age'] | default('', true) }}</Age>
-                <Sex>{{ ident2['sex'] | default('', true) }}</Sex>
-                <IndividualId>{{ ident2['individual_id'] | default('', true) }}</IndividualId>
-                <AnimalRecognizable>{{ ident2['animal_recognizable'] | default('', true) }}</AnimalRecognizable>
-                <IndividualAnimalNotes>{{ ident2['individual_animal_notes'] | default('', true) }}</IndividualAnimalNotes>
+                <IUCNId></IUCNId>
+                <TSNId></TSNId>
+                <SpeciesScientificName></SpeciesScientificName>
+                <SpeciesCommonName></SpeciesCommonName>
+                <Count></Count>
+                <Age></Age>
+                <Sex></Sex>
+                <IndividualId></IndividualId>
+                <AnimalRecognizable></AnimalRecognizable>
+                <IndividualAnimalNotes></IndividualAnimalNotes>
             </Identification>
-            {% endfor %}
         </VolunteerIdentifications>
         <ResearcherIdentifications>
             {% for ident2 in sequence['researcher_identifications'] %}
@@ -113,9 +111,9 @@
             <ImageIdentifications>
                 <Identification>
                     <IUCNId>{{ image['iucn_id'] | default('', true) }}</IUCNId>
-                    <TSNId>{{ image['tsn_id'] | default('', true) }}</TSNId>
+                    <TSNId></TSNId>
                     <SpeciesScientificName>{{ image['sn'] | default('', true) }}</SpeciesScientificName>
-                    <SpeciesCommonName>{{ image['cn'] | default('', true) }}</SpeciesCommonName>
+                    <SpeciesCommonName></SpeciesCommonName>
                     <Count>{{ image['count'] | default('', true) }}</Count>
                     <Age>{{ image['age'] | default('', true) }}</Age>
                     <Sex>{{ image['sex'] | default('', true) }}</Sex>

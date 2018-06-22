@@ -11,8 +11,6 @@ import datetime
 from config import fields as f_map
 import logging
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 sample_root_direcotry = './sample-data/emammal-sample-data'
 sample_output_direcotry = './output'
@@ -24,7 +22,7 @@ input_type = '0' if len(sys.argv) <= 1 else sys.argv[3]
 emammal_validator_type = True if input_type == '1' else False
 wcs_validator_type = True if input_type == '0' else False
 
-# print sample_root_directory
+# print sample_root_direcotry
 # print output_directory
 # print input_type
 # print emammal_validator_type
@@ -58,6 +56,8 @@ def get_dir_to_process_way(directory):
     return directories
 
 
+
+
 def set_deployment_values(folder, deployment):
     errors = False
     error_message = "Could not process "+os.path.join(folder, DEPLOYMENT_FILE)
@@ -65,7 +65,7 @@ def set_deployment_values(folder, deployment):
     camera_deployment_id = fields["deployment"]["camera_deployment_id"]
     camera_deployment_begin_date = fields["deployment"]["camera_deployment_begin_date"]
     camera_deployment_end_date = fields["deployment"]["camera_deployment_end_date"]
-    #print("opening file: "+str(os.path.join(folder, DEPLOYMENT_FILE))+"\n")
+
     data = pd.read_csv(os.path.join(folder, DEPLOYMENT_FILE), dtype=str)
     data = data[pd.notnull(data[camera_deployment_id])]
     data[camera_deployment_begin_date] = pd.to_datetime(data[camera_deployment_begin_date])
@@ -132,11 +132,10 @@ def set_project_values(folder, deployment):
 
 def write_deployment(path, deployment):
     errors = False
-    error_message = "Error writing deployment file " + os.path.join(output_directory, os.path.basename(path)+"s deployment_manifest.xml")
+    error_message = "Error writing deployment file " + os.path.join(output_directory, os.path.basename(path)+".xml")
     try:
         output = template.render(deployment=deployment)
-        print str(deployment)
-        out_file = open(os.path.join(path,"deployment_manifest.xml"), 'w')
+        out_file = open(os.path.join(output_directory, os.path.basename(path)+".xml"), 'w')
         out_file.write(output)
         out_file.close()
     except Exception as e:
@@ -173,7 +172,7 @@ def create_emammal_sequences(folder,deployment):
         access_constraints_array = list(set(data[iucn_status].tolist()))
         access_constraints = get_access_constraint(access_constraints_array)
         deployment["access_constraint"] = access_constraints
-        for i in data.iterrows():#iterates through 
+        for i in data.iterrows():
             sequence_index = i[0]
             image_data = pd.read_csv(os.path.join(folder, IMAGE_FILE), dtype=str)
             image_data = image_data[pd.notnull(image_data[fields["image"]["image_id"]])]
@@ -205,16 +204,14 @@ def create_emammal_sequences(folder,deployment):
                 for f in fields['image']:
                     img_csv_mapped_name = fields['image'][f]
                     if not pd.isnull(image_data[img_csv_mapped_name][image_index]):
-                        #print(image_data[img_csv_mapped_name][image_index])
                         image[f] = image_data[img_csv_mapped_name][image_index]
                     else:
                         image[f] = None
-                #print image
                 image_count = image_count + 1
                 sequence["images"].append(image)
             sequences.append(sequence)
         deployment["sequences"] = sequences
-    
+
     except Exception as e:
         errors = True
         print e
@@ -269,7 +266,7 @@ def create_wcs_sequences(folder, deployment):
                     else:
                         image[i] = None
                         r_indent[i] = None
-                r_indent['count'] = image["count"]
+                r_indent['count'] = None
                 sequence["researcher_identifications"].append(r_indent)
 
                 ## XML Requires these values to be lower case
@@ -319,7 +316,6 @@ def validate_required_files(directory):
     error_message = "No CSV file found in " + root_directory
     required_files = get_required_fields()
     all_csv_files = glob.glob(directory+'/'+'*.csv')
-    print "\n \n "+str(directory)+"\n"
     if len(all_csv_files) == 0:
         errors = True
         logging.error(error_message)
@@ -363,7 +359,7 @@ def main():
         return
     for dir in get_dir_to_process_way(root_directory):
         deployment = {}
-        #print("Current directory in main: "+str(dir))
+
         errors_in_directories = validate_required_files(dir)
         if errors_in_directories:
             continue
@@ -383,9 +379,9 @@ def main():
 
         if emammal_validator_type:
             errors_sequence_values = create_emammal_sequences(dir, deployment)
-            
+
         errors_write_deployment = write_deployment(dir, deployment)
-        
+
         if errors_project_values or errors_deployment_values or errors_sequence_values or errors_write_deployment:
             logging.error("Error Occurred for on" + dir )
             continue
