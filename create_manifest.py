@@ -10,7 +10,7 @@ import glob
 import datetime
 from config import fields as f_map
 import logging
-import sys
+import sys, traceback
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -135,7 +135,7 @@ def write_deployment(path, deployment):
     error_message = "Error writing deployment file " + os.path.join(output_directory, os.path.basename(path)+"s deployment_manifest.xml")
     try:
         output = template.render(deployment=deployment)
-        print str(deployment)
+        #print(str(deployment))
         out_file = open(os.path.join(path,"deployment_manifest.xml"), 'w')
         out_file.write(output)
         out_file.close()
@@ -173,7 +173,7 @@ def create_emammal_sequences(folder,deployment):
         access_constraints_array = list(set(data[iucn_status].tolist()))
         access_constraints = get_access_constraint(access_constraints_array)
         deployment["access_constraint"] = access_constraints
-        for i in data.iterrows():#iterates through 
+        for i in data.iterrows():#iterates through sequences
             sequence_index = i[0]
             image_data = pd.read_csv(os.path.join(folder, IMAGE_FILE), dtype=str)
             image_data = image_data[pd.notnull(image_data[fields["image"]["image_id"]])]
@@ -188,14 +188,42 @@ def create_emammal_sequences(folder,deployment):
             sequence["images"] = []
 
             # researcher_identifications
-            r_indent = {}
-            for j in fields['sequence']:
-                csv_mapped_name = fields['sequence'][j]
-                if not pd.isnull(data[csv_mapped_name][sequence_index]):
-                    r_indent[j] = data.ix[sequence_index][csv_mapped_name]
-                else:
-                    r_indent[j] = None
-            sequence["researcher_identifications"].append(r_indent)
+            #**#
+            #insert a loop to go through each individual species and add a seperate identification to the XML file
+            #**#
+            multisp = pd.DataFrame(columns=image_data.columns)
+            #for sequence in image_data['Image.Sequence.ID'].unique():
+            #    seq = image_data[image_data['Image.Sequence.ID'] == sequence]
+            if len(image_data[image_data['Genus.Species'] != "No Animal"]['Genus.Species'].unique()) > 1:
+                print("multi-animal sequence")
+                print(sequence_index)
+                print(sequence["sequence_id"])
+                #print(sequence)
+                #data = image_data[image_data['Image.Sequence.ID'] == sequence]
+                image_species = image_data.drop_duplicates(['Genus.Species'])
+                multisp = multisp.append(image_species)
+                for row in multisp.iterrows():#iterate through the individual species IDs for this sequence
+                    #speciesfields = ["Genus.Species","Species.Common.Name","Age","Sex","Individual.ID","Count","Animal.recognizable","Individual.Animal.Notes","TSN.ID","IUCN.ID","IUCN.Status"]
+                    print(type(row))
+                    print(row)
+                    speciesfields = ["sn","cn","age","sex","individual_id","count","animal_recognizable","individual_animal_notes","tsn_id","iucn_id","iucn_status"]
+                    r_indent = {}
+                    for j in speciesfields:#iterates through the fields dictionary which maps names from this script to rows in the csv
+                        csv_mapped_name = fields['image'][j]
+                        if not pd.isnull(row[1][csv_mapped_name]):
+                            r_indent[j] = row[1][csv_mapped_name]
+                        else:
+                            r_indent[j] = None
+                    sequence["researcher_identifications"].append(r_indent)
+            else:
+                r_indent = {}
+                for j in fields['sequence']:#iterates through the fields dictionary which maps names from this script to rows in the csv
+                    csv_mapped_name = fields['sequence'][j]
+                    if not pd.isnull(data[csv_mapped_name][sequence_index]):
+                        r_indent[j] = data.ix[sequence_index][csv_mapped_name]
+                    else:
+                        r_indent[j] = None
+                sequence["researcher_identifications"].append(r_indent)
             # image_identifications
             image_count = 1
             for img in image_data.iterrows():
@@ -214,10 +242,11 @@ def create_emammal_sequences(folder,deployment):
                 sequence["images"].append(image)
             sequences.append(sequence)
         deployment["sequences"] = sequences
-    
+
     except Exception as e:
         errors = True
         print e
+        traceback.print_exc()
         logging.error(error_message)
         logging.error(e)
 
@@ -383,9 +412,9 @@ def main():
 
         if emammal_validator_type:
             errors_sequence_values = create_emammal_sequences(dir, deployment)
-            
-        errors_write_deployment = write_deployment(dir, deployment)
-        
+
+        errors_write_deployment = write_deployment(dir, deployment) #this both writes the deployment to a file and checks for errors
+
         if errors_project_values or errors_deployment_values or errors_sequence_values or errors_write_deployment:
             logging.error("Error Occurred for on" + dir )
             continue
