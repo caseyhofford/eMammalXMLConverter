@@ -11,8 +11,9 @@ import datetime
 from config import fields as f_map
 import logging
 import sys, traceback
-reload(sys)
-sys.setdefaultencoding('utf8')
+import imp
+#imp.reload(sys)
+#sys.setdefaultencoding('utf8')
 
 sample_root_direcotry = './sample-data/emammal-sample-data'
 sample_output_direcotry = './output'
@@ -140,7 +141,7 @@ def write_deployment(path, deployment):
         out_file.write(output)
         out_file.close()
     except Exception as e:
-        print e
+        print(e)
         logging.error(error_message)
         errors = True
     return errors
@@ -194,17 +195,17 @@ def create_emammal_sequences(folder,deployment):
             multisp = pd.DataFrame(columns=image_data.columns)
             #for sequence in image_data['Image.Sequence.ID'].unique():
             #    seq = image_data[image_data['Image.Sequence.ID'] == sequence]
-            if len(image_data[image_data['Genus.Species'] != "No Animal"]['Genus.Species'].unique()) > 1:
+            if len(image_data[image_data['Genus.Species'] != "No Animal"]['Genus.Species'].unique()) > 0:
                 print("multi-animal sequence")
                 print(sequence_index)
-                print(sequence["sequence_id"])
+                print((sequence["sequence_id"]))
                 #print(sequence)
                 #data = image_data[image_data['Image.Sequence.ID'] == sequence]
-                image_species = image_data.drop_duplicates(['Genus.Species'])
+                image_species = image_data[image_data['Genus.Species'] != "No Animal"].drop_duplicates(['Genus.Species'])
                 multisp = multisp.append(image_species)
                 for row in multisp.iterrows():#iterate through the individual species IDs for this sequence
                     #speciesfields = ["Genus.Species","Species.Common.Name","Age","Sex","Individual.ID","Count","Animal.recognizable","Individual.Animal.Notes","TSN.ID","IUCN.ID","IUCN.Status"]
-                    print(type(row))
+                    print((type(row)))
                     print(row)
                     speciesfields = ["sn","cn","age","sex","individual_id","count","animal_recognizable","individual_animal_notes","tsn_id","iucn_id","iucn_status"]
                     r_indent = {}
@@ -245,7 +246,7 @@ def create_emammal_sequences(folder,deployment):
 
     except Exception as e:
         errors = True
-        print e
+        print(e)
         traceback.print_exc()
         logging.error(error_message)
         logging.error(e)
@@ -325,7 +326,7 @@ def create_wcs_sequences(folder, deployment):
         deployment["sequences"] = sequences
     except Exception as e:
         errors = True
-        print e
+        print(e)
         logging.error(error_message)
         logging.error(e)
 
@@ -348,15 +349,15 @@ def validate_required_files(directory):
     error_message = "No CSV file found in " + root_directory
     required_files = get_required_fields()
     all_csv_files = glob.glob(directory+'/'+'*.csv')
-    print "\n \n "+str(directory)+"\n"
+    print("\n \n "+str(directory)+"\n")
     if len(all_csv_files) == 0:
         errors = True
         logging.error(error_message)
-        print error_message
+        print(error_message)
     for csv in all_csv_files:
         if not os.path.basename(csv) in required_files:
             message = 'Invalid Filename ' + csv + " must match [ " + ", ".join(required_files) + ' ]'
-            print message
+            print(message)
             logging.error(message)
             errors = True
     return errors
@@ -379,7 +380,7 @@ def validate_fields(folder):
 
         for i in config_fields:
             if not config_fields[i] in headers:
-                print 'Expecting field '+"`"+config_fields[i]+"`" +'in' + os.path.join(folder, f)
+                print('Expecting field '+"`"+config_fields[i]+"`" +'in' + os.path.join(folder, f))
                 logging.error('Expecting field '+"`"+config_fields[i]+"`" +' in' + os.path.join(folder, f))
                 errors = True
     return errors
@@ -388,7 +389,7 @@ def validate_fields(folder):
 def main():
     if not os.path.isdir(root_directory):
         logging.error('Invalid Root Directory ' + root_directory)
-        print('Invalid Root Directory ' + root_directory)
+        print(('Invalid Root Directory ' + root_directory))
         return
     for dir in get_dir_to_process_way(root_directory):
         deployment = {}
@@ -407,7 +408,7 @@ def main():
         errors_sequence_values = None
 
         if wcs_validator_type:
-            print dir
+            print(dir)
             errors_sequence_values = create_wcs_sequences(dir,deployment)
 
         if emammal_validator_type:
